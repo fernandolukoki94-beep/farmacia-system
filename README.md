@@ -1,75 +1,27 @@
-# Sistema de Gestão de Farmácia
+# 💊 Sistema de Gestão de Stock Farmacêutico (Fullstack)
 
-Este projeto implementa um sistema simples de gestão de farmácia com um backend em Flask (Python) e SQLite, e um frontend em HTML, CSS (Bootstrap) e JavaScript.
+Este é um sistema robusto de controlo de inventário, vendas e autenticação de utilizadores, desenvolvido com foco em arquitetura RESTful, persistência de dados e segurança de rotas.
 
-## Estrutura do Projeto
+🚀 **Link do Projeto:** [Acede aqui ao Sistema Live](https://fernandolukoki94-beep.github.io/farmacia-system/)
 
-```
-farmacia-system/
-├── backend/
-│   └── app.py
-├── frontend/
-│   └── index.html
-└── README.md
-```
+---
 
-## Backend (Flask API)
+## 🛠️ O Grande Diferencial Técnico (Mobile Development)
+Todo o ecossistema deste projeto — desde a escrita do código, gestão da base de dados relacional (SQLite), controlo de versões com Git, até a preparação dos ficheiros para deploy — foi realizado de forma nativa dentro de um **ambiente mobile Linux utilizando o Termux (Android)**. Isto demonstra uma forte capacidade de adaptação técnica, resolução de problemas e domínio de ferramentas de terminal sob limitações de hardware.
 
-O backend é uma API RESTful desenvolvida com Flask que interage com uma base de dados SQLite. Ele fornece endpoints para:
+---
 
-- `GET /products`: Obter todos os produtos.
-- `POST /products`: Adicionar um novo produto.
-- `PUT /products/<id>`: Atualizar um produto existente.
-- `DELETE /products/<id>`: Remover um produto.
+## 🧰 Tecnologias Utilizadas
+- **Backend:** Python 3, Flask (API REST)
+- **Frontend:** HTML5, CSS3 (Modern Dark Mode), JavaScript (ES6 / Fetch API)
+- **Base de Dados:** SQLite3
+- **DevOps/Ambiente:** Git, GitHub, GitHub Pages, Render, Termux (Linux Mobile)
 
-### Como Executar o Backend
+---
 
-1. Navegue até a pasta `backend`:
-   ```bash
-   cd farmacia-system/backend
-   ```
-2. Instale as dependências (se ainda não o fez):
-   ```bash
-   pip install flask flask-cors
-   ```
-3. Execute a aplicação Flask:
-   ```bash
-   python app.py
-   ```
+## 🎯 Funcionalidades Implementadas
+- [x] **🔐 Tela de Autenticação (Login/Logout):** Sistema de validação de credenciais com proteção de rotas no Frontend (impede o acesso ao painel sem login ativo).
+- [x] **📦 CRUD de Inventário:** API configurada para receber, ler e listar medicamentos diretamente de uma base de dados relacional.
+- [x] **🔴 Baixa Automática de Stock:** Lógica de negócio que processa vendas e atualiza a quantidade disponível instantaneamente.
+- [x] **⚡ Mecanismo de Contingência (Fallback):** O frontend possui uma lógica inteligente que deteta se o servidor em nuvem está em repouso e ativa uma simulação local, garantindo que o utilizador/recrutador consiga testar o fluxo completo sem interrupções.
 
-O servidor estará a correr em `http://127.0.0.1:5000`.
-
-## Frontend (HTML, CSS, JavaScript)
-
-O frontend é uma aplicação web simples que permite visualizar, adicionar e remover produtos do inventário da farmácia. Ele consome a API RESTful fornecida pelo backend.
-
-### Como Executar o Frontend
-
-1. Certifique-se de que o backend está a correr.
-2. Abra o ficheiro `index.html` no seu navegador web.
-
-## Testar a API (Exemplo com `curl`)
-
-### Adicionar um Produto
-
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"name": "Paracetamol", "price": 5.50, "quantity": 100}' http://127.0.0.1:5000/products
-```
-
-### Obter Todos os Produtos
-
-```bash
-curl http://127.0.0.1:5000/products
-```
-
-### Atualizar um Produto (ID 1)
-
-```bash
-curl -X PUT -H "Content-Type: application/json" -d '{"name": "Paracetamol 500mg", "price": 6.00, "quantity": 90}' http://127.0.0.1:5000/products/1
-```
-
-### Remover um Produto (ID 1)
-
-```bash
-curl -X DELETE http://127.0.0.1:5000/products/1
-```
