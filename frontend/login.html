@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Farmácia</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        input { width: 90%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 96%; background-color: #3498db; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #2980b9; }
+        .erro { color: #e74c3c; margin-top: 10px; font-size: 14px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>🔐 Acesso Restrito</h2>
+        <form id="loginForm">
+            <input type="text" id="usuario" placeholder="Utilizador (admin)" required>
+            <input type="password" id="senha" placeholder="Palavra-passe" required>
+            <button type="submit">Entrar no Sistema</button>
+        </form>
+        <div id="mensagemErro" class="erro">Utilizador ou senha incorretos!</div>
+    </div>
+
+    <script>
+        // URL da tua API (podes usar o teu link do Render ou local do Termux)
+        const API_URL = "https://farmacia-system.onrender.com"; 
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            const msgErro = document.getElementById('mensagemErro');
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, senha })
+                });
+
+                const dados = await res.json();
+
+                if (res.ok && dados.autorizado) {
+                    // Guarda uma "chave" no navegador a dizer que o user está logado
+                    localStorage.setItem('logado', 'true');
+                    // Redireciona para o painel principal da farmácia
+                    window.location.href = "index.html";
+                } else {
+                    msgErro.style.display = "block";
+                    msgErro.innerText = dados.erro;
+                }
+            } catch (erro) {
+                console.error("Erro no login:", erro);
+                // Validação local de contingência (caso a nuvem falhe, o teu app funciona no portfólio!)
+                if (usuario === "admin" && senha === "farmacia123") {
+                    localStorage.setItem('logado', 'true');
+                    window.location.href = "index.html";
+                } else {
+                    msgErro.style.display = "block";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
