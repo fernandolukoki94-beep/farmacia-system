@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Gestão de Farmácia</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #333; box-sizing: border-box; }
+        h1 { color: #2ecc71; text-align: center; font-size: 22px; margin-top: 0; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; color: #ccc; font-size: 14px; }
+        input { width: 100%; padding: 10px; border: 1px solid #444; background: #2a2a2a; color: white; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 5px; }
+        .btn-add { background-color: #27ae60; color: white; }
+        .btn-add:hover { background-color: #219653; }
+        .btn-logout { background-color: #7f8c8d; color: white; margin-bottom: 20px; width: auto; padding: 8px 15px; font-size: 13px; align-self: flex-end; }
+        .btn-venda { background-color: #e74c3c; color: white; padding: 6px 12px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; }
+        .btn-venda:hover { background-color: #c0392b; }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 8px; color: #2ecc71; font-size: 18px; margin-top: 25px; }
+        .item-produto { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #252525; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #2ecc71; }
+        .info-produto { display: flex; flex-direction: column; gap: 2px; }
+        .nome-p { font-weight: bold; color: #fff; }
+        .detalhe-p { font-size: 13px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-logout" onclick="sair()">🚪 Sair do Sistema</button>
+
+    <div class="container">
+        <h1>💊 Sistema de Farmácia</h1>
+        
+        <form id="productForm">
+            <div class="form-group">
+                <label>Nome do Medicamento:</label>
+                <input type="text" id="name" required placeholder="Ex: Paracetamol">
+            </div>
+            <div class="form-group">
+                <label>Preço (AKZ/€):</label>
+                <input type="number" step="0.01" id="price" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Quantidade em Stock:</label>
+                <input type="number" id="quantity" required placeholder="0">
+            </div>
+            <button type="submit" class="btn-add">📦 Gravar no Stock</button>
+        </form>
+
+        <h2>📦 Produtos em Stock</h2>
+        <div id="listaProdutos">
+            <!-- Produtos inseridos dinamicamente aqui -->
+        </div>
+    </div>
+
+    <script>
+        // SEGURANÇA: Bloqueia se tentar aceder sem login
+        if (localStorage.getItem('logado') !== 'true') {
+            window.location.href = "index.html";
+        }
+
+        const API_URL = "https://farmacia-system.onrender.com";
+
+        // Carregar produtos ao abrir a página
+        window.onload = carregarProdutos;
+
+        async function carregarProdutos() {
+            const lista = document.getElementById('listaProdutos');
+            lista.innerHTML = "<p style='color:#aaa;'>A carregar produtos...</p>";
+            
+            try {
+                const res = await fetch(`${API_URL}/medicamentos`);
+                const produtos = await res.json();
+                
+                lista.innerHTML = "";
+                if(produtos.length === 0) {
+                    lista.innerHTML = "<p style='color:#aaa;'>Nenhum medicamento em stock.</p>";
+                    return;
+                }
+
+                produtos.forEach(p => {
+                    lista.appendChild(criarCardProduto(p.id, p.name, p.price, p.quantity));
+                });
+            } catch (erro) {
+                lista.innerHTML = "<p style='color:#e74c3c;'>Servidor em repouso. Insira um produto para iniciar a simulação local.</p>";
+            }
+        }
+
+        function criarCardProduto(id, name, price, quantity) {
+            const div = document.createElement('div');
+            div.className = 'item-produto';
+            div.innerHTML = `
+                <div class="info-produto">
+                    <span class="nome-p">${name}</span>
+                    <span class="detalhe-p">Preço: ${parseFloat(price).toFixed(2)} | Qtd: <strong id="qtd-${id}">${quantity}</strong></span>
+                </div>
+                <button class="btn-venda" onclick="venderProduto(${id})">🔴 Vender</button>
+            `;
+            return div;
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            const produtoDados = { name, price, quantity };
+
+            try {
+                const res = await fetch(`${API_URL}/medicamentos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(produtoDados)
+                });
+
+                if (res.ok) {
+                    alert("Produto adicionado com sucesso!");
+                    document.getElementById('productForm').reset();
+                    carregarProdutos();
+                } else {
+                    alert("Erro ao adicionar produto no servidor.");
+                }
+            } catch (erro) {
+                // FALLBACK LOCAL: Se o Render falhar, o app funciona visualmente para teste
+                const lista = document.getElementById('listaProdutos');
+                if (lista.querySelector('.btn-venda') === null) lista.innerHTML = "";
+                const idFake = Math.floor(Math.random() * 1000);
+                lista.appendChild(criarCardProduto(idFake, name, price, quantity));
+                document.getElementById('productForm').reset();
+                alert("Simulação: Produto adicionado localmente!");
+            }
+        });
+
+        async function venderProduto(id) {
+            try {
+                const res = await fetch(`${API_URL}/medicamentos/${id}/vender`, { method: 'POST' });
+                if (res.ok) {
+                    alert("Venda efetuada!");
+                    carregarProdutos();
+                } else {
+                    alert("Erro ao realizar venda.");
+                }
+            } catch (erro) {
+                // Lógica visual local caso esteja offline
+                const campoQtd = document.getElementById(`qtd-${id}`);
+                let qtdAtual = parseInt(campoQtd.innerText);
+                if (qtdAtual > 0) {
+                    campoQtd.innerText = qtdAtual - 1;
+                    alert("Venda simulada com sucesso!");
+                } else {
+                    alert("Stock esgotado!");
+                }
+            }
+        }
+
+        function sair() {
+            localStorage.removeItem('logado');
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
+
